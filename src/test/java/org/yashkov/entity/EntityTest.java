@@ -48,6 +48,28 @@ class EntityTest {
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
         }
+
+        @Test
+        void persist_DoesNothing_WhenNotDirty()
+        {
+            entity.persist();
+
+            assertThat(entity.doPersistCount).isEqualTo(0);
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void persist_PersistsData_WhenDirty()
+        {
+            entity.markDirty();
+
+            entity.persist();
+
+            assertThat(entity.doPersistCount).isEqualTo(1);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+        }
     }
 
     @Nested
@@ -89,6 +111,28 @@ class EntityTest {
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isTrue();
         }
+
+        @Test
+        void persist_DoesNothing_WhenNotDirty()
+        {
+            entity.persist();
+
+            assertThat(entity.doPersistCount).isEqualTo(0);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void persist_PersistsData_WhenDirty()
+        {
+            entity.markDirty();
+
+            entity.persist();
+
+            assertThat(entity.doPersistCount).isEqualTo(1);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+        }
     }
 
     public interface TestModel {
@@ -96,6 +140,8 @@ class EntityTest {
 
     public static class TestEntity extends Entity implements TestModel {
         public int doLoadCount = 0;
+
+        public int doPersistCount = 0;
 
         @Override
         public void doLoad()
@@ -106,7 +152,7 @@ class EntityTest {
         @Override
         public void doPersist()
         {
-            // TODO Auto-generated method stub
+            ++doPersistCount;
         }
     }
 }

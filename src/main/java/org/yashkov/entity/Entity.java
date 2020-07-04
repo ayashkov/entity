@@ -29,6 +29,16 @@ public abstract class Entity {
         persisted = true;
     }
 
+    public void persist()
+    {
+        if (!dirty)
+            return;
+
+        doPersist();
+        persisted = true;
+        dirty = false;
+    }
+
     public abstract void doLoad();
 
     public abstract void doPersist();
