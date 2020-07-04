@@ -63,6 +63,41 @@ class EntityTest {
         }
 
         @Test
+        void refresh_LoadsData_WhenNotDirty()
+        {
+            entity.refresh();
+
+            assertThat(entity.doLoadCount).isEqualTo(1);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void refresh_LoadsData_WhenDirty()
+        {
+            entity.markDirty();
+
+            entity.refresh();
+
+            assertThat(entity.doLoadCount).isEqualTo(1);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void refresh_PropagatesException_WhenDoLoadFails()
+        {
+            entity.doLoadException = new RuntimeException("load");
+            entity.markDirty();
+
+            assertThatThrownBy(() -> entity.refresh())
+                .isSameAs(entity.doLoadException);
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
+        }
+
+        @Test
         void persist_DoesNothing_WhenNotDirty()
         {
             entity.persist();
@@ -135,6 +170,41 @@ class EntityTest {
             entity.load();
 
             assertThat(entity.doLoadCount).isEqualTo(0);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isTrue();
+        }
+
+        @Test
+        void refresh_LoadsData_WhenNotDirty()
+        {
+            entity.refresh();
+
+            assertThat(entity.doLoadCount).isEqualTo(1);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void refresh_LoadsData_WhenDirty()
+        {
+            entity.markDirty();
+
+            entity.refresh();
+
+            assertThat(entity.doLoadCount).isEqualTo(1);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void refresh_PropagatesException_WhenDoLoadFails()
+        {
+            entity.doLoadException = new RuntimeException("load");
+            entity.markDirty();
+
+            assertThatThrownBy(() -> entity.refresh())
+                .isSameAs(entity.doLoadException);
+
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isTrue();
         }

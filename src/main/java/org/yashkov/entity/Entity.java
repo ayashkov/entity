@@ -29,6 +29,13 @@ public abstract class Entity {
         persisted = true;
     }
 
+    public void refresh()
+    {
+        doLoad();
+        persisted = true;
+        dirty = false;
+    }
+
     public void persist()
     {
         if (!dirty)
@@ -39,7 +46,7 @@ public abstract class Entity {
         dirty = false;
     }
 
-    public abstract void doLoad();
+    protected abstract void doLoad();
 
-    public abstract void doPersist();
+    protected abstract void doPersist();
 }
