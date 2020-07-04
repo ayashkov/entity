@@ -10,42 +10,84 @@ class EntityTest {
     private TestEntity entity = new TestEntity();
 
     @Nested
-    class NewEntity {
+    class NotPersisted {
         @Test
-        void constructor_SetsInititalState_Always()
+        void constructor_SetsInititalState()
         {
-            assertThat(entity.isNew()).isTrue();
+            assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isFalse();
         }
 
         @Test
-        void load_LoadsData_WhenNotYetLoaded()
+        void markDirty_MarksEntityAsDirty()
+        {
+            entity.markDirty();
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
+        }
+
+        @Test
+        void load_LoadsData_WhenNotDirty()
         {
             entity.load();
 
-            assertThat(entity.loaded).isEqualTo(1);
-            assertThat(entity.isNew()).isFalse();
+            assertThat(entity.doLoadCount).isEqualTo(1);
+            assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void load_DoesNothing_WhenDirty()
+        {
+            entity.markDirty();
+
+            entity.load();
+
+            assertThat(entity.doLoadCount).isEqualTo(0);
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
         }
     }
 
     @Nested
-    class LoadedEntity {
+    class Persisted {
         @BeforeEach
         void setUp()
         {
             entity.load();
-            entity.loaded = 0;
+            entity.doLoadCount = 0;
         }
 
         @Test
-        void load_DoesNothing_WhenAlreadyLoaded()
+        void markDirty_MarksEntityAsDirty()
+        {
+            entity.markDirty();
+
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isTrue();
+        }
+
+        @Test
+        void load_DoesNothing_WhenNotDirty()
         {
             entity.load();
 
-            assertThat(entity.loaded).isEqualTo(0);
-            assertThat(entity.isNew()).isFalse();
+            assertThat(entity.doLoadCount).isEqualTo(0);
+            assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void load_DoesNothing_WhenDirty()
+        {
+            entity.markDirty();
+
+            entity.load();
+
+            assertThat(entity.doLoadCount).isEqualTo(0);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isTrue();
         }
     }
 
@@ -53,12 +95,12 @@ class EntityTest {
     }
 
     public static class TestEntity extends Entity implements TestModel {
-        public int loaded = 0;
+        public int doLoadCount = 0;
 
         @Override
         public void doLoad()
         {
-            ++loaded;
+            ++doLoadCount;
         }
 
         @Override

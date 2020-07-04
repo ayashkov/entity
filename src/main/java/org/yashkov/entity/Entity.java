@@ -1,25 +1,32 @@
 package org.yashkov.entity;
 
 public abstract class Entity {
-    private boolean newEntity = true;
+    private boolean persisted = false;
 
-    public boolean isNew()
+    private boolean dirty = false;
+
+    public boolean isPersisted()
     {
-        return newEntity;
+        return persisted;
     }
 
     public boolean isDirty()
     {
-        return false;
+        return dirty;
+    }
+
+    public void markDirty()
+    {
+        dirty = true;
     }
 
     public void load()
     {
-        if (!newEntity)
+        if (persisted || dirty)
             return;
 
         doLoad();
-        newEntity = false;
+        persisted = true;
     }
 
     public abstract void doLoad();
