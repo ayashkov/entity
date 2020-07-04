@@ -1,6 +1,7 @@
 package org.yashkov.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -50,6 +51,18 @@ class EntityTest {
         }
 
         @Test
+        void load_PropagatesException_WhenDoLoadFails()
+        {
+            entity.doLoadException = new RuntimeException("load");
+
+            assertThatThrownBy(() -> entity.load())
+                .isSameAs(entity.doLoadException);
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
         void persist_DoesNothing_WhenNotDirty()
         {
             entity.persist();
@@ -69,6 +82,20 @@ class EntityTest {
             assertThat(entity.doPersistCount).isEqualTo(1);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void persist_PropagatesException_WhenDoPersistFails()
+        {
+            entity.doPersistException = new RuntimeException("persist");
+            entity.markDirty();
+
+            assertThatThrownBy(() -> entity.persist())
+                .isSameAs(entity.doPersistException);
+
+            assertThat(entity.doPersistCount).isEqualTo(1);
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
         }
     }
 
@@ -133,6 +160,20 @@ class EntityTest {
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
         }
+
+        @Test
+        void persist_PropagatesException_WhenDoPersistFails()
+        {
+            entity.doPersistException = new RuntimeException("persist");
+            entity.markDirty();
+
+            assertThatThrownBy(() -> entity.persist())
+                .isSameAs(entity.doPersistException);
+
+            assertThat(entity.doPersistCount).isEqualTo(1);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isTrue();
+        }
     }
 
     public interface TestModel {
@@ -141,18 +182,28 @@ class EntityTest {
     public static class TestEntity extends Entity implements TestModel {
         public int doLoadCount = 0;
 
+        public RuntimeException doLoadException = null;
+
         public int doPersistCount = 0;
+
+        public RuntimeException doPersistException = null;
 
         @Override
         public void doLoad()
         {
             ++doLoadCount;
+
+            if (doLoadException != null)
+                throw doLoadException;
         }
 
         @Override
         public void doPersist()
         {
             ++doPersistCount;
+
+            if (doPersistException != null)
+                throw doPersistException;
         }
     }
 }
