@@ -30,9 +30,13 @@ public abstract class Entity {
 
     public void refresh()
     {
-        doLoad();
-        persisted = true;
-        dirty = false;
+        try {
+            doLoad();
+            persisted = true;
+            dirty = false;
+        } catch (NoSuchEntityException ex) {
+            persisted = false;
+        }
     }
 
     public void persist()
@@ -45,7 +49,7 @@ public abstract class Entity {
         dirty = false;
     }
 
-    protected abstract void doLoad();
+    protected abstract void doLoad() throws NoSuchEntityException;
 
     protected abstract void doPersist();
 }

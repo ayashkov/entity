@@ -1,6 +1,7 @@
 package org.yashkov.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -51,6 +52,17 @@ class EntityTest {
         }
 
         @Test
+        void load_DoesNothing_WhenNoSuchEntity()
+        {
+            entity.doLoadException = new NoSuchEntityException("load");
+
+            assertThatCode(() -> entity.load()).doesNotThrowAnyException();
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
         void load_PropagatesException_WhenDoLoadFails()
         {
             entity.doLoadException = new RuntimeException("load");
@@ -82,6 +94,18 @@ class EntityTest {
             assertThat(entity.doLoadCount).isEqualTo(1);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void refresh_DoesNothing_WhenNoSuchEntity()
+        {
+            entity.doLoadException = new NoSuchEntityException("load");
+            entity.markDirty();
+
+            assertThatCode(() -> entity.refresh()).doesNotThrowAnyException();
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
         }
 
         @Test
@@ -197,6 +221,18 @@ class EntityTest {
         }
 
         @Test
+        void refresh_ClearsPersisted_WhenNoSuchEntity()
+        {
+            entity.doLoadException = new NoSuchEntityException("load");
+            entity.markDirty();
+
+            assertThatCode(() -> entity.refresh()).doesNotThrowAnyException();
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
+        }
+
+        @Test
         void refresh_PropagatesException_WhenDoLoadFails()
         {
             entity.doLoadException = new RuntimeException("load");
@@ -252,19 +288,22 @@ class EntityTest {
     public static class TestEntity extends Entity implements TestModel {
         public int doLoadCount = 0;
 
-        public RuntimeException doLoadException = null;
+        public Exception doLoadException = null;
 
         public int doPersistCount = 0;
 
         public RuntimeException doPersistException = null;
 
         @Override
-        public void doLoad()
+        public void doLoad() throws NoSuchEntityException
         {
             ++doLoadCount;
 
-            if (doLoadException != null)
-                throw doLoadException;
+            if (doLoadException instanceof NoSuchEntityException)
+                throw (NoSuchEntityException)doLoadException;
+
+            if (doLoadException instanceof RuntimeException)
+                throw (RuntimeException)doLoadException;
         }
 
         @Override
