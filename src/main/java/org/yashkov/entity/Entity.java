@@ -25,8 +25,7 @@ public abstract class Entity {
         if (persisted || dirty)
             return;
 
-        doLoad();
-        persisted = true;
+        refresh();
     }
 
     public void refresh()
