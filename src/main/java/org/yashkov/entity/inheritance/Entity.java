@@ -1,4 +1,4 @@
-package org.yashkov.entity;
+package org.yashkov.entity.inheritance;
 
 public abstract class Entity {
     private boolean persisted = false;

@@ -1,4 +1,4 @@
-package org.yashkov.entity;
+package org.yashkov.entity.inheritance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class EntityTest {
-    private TestEntity entity = new TestEntity();
+    private final TestEntity entity = new TestEntity();
 
     @Nested
     class NotPersisted {
@@ -68,7 +68,7 @@ class EntityTest {
             entity.doLoadException = new RuntimeException("load");
 
             assertThatThrownBy(() -> entity.load())
-                .isSameAs(entity.doLoadException);
+            .isSameAs(entity.doLoadException);
 
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isFalse();
@@ -115,7 +115,7 @@ class EntityTest {
             entity.markDirty();
 
             assertThatThrownBy(() -> entity.refresh())
-                .isSameAs(entity.doLoadException);
+            .isSameAs(entity.doLoadException);
 
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
@@ -150,7 +150,7 @@ class EntityTest {
             entity.markDirty();
 
             assertThatThrownBy(() -> entity.persist())
-                .isSameAs(entity.doPersistException);
+            .isSameAs(entity.doPersistException);
 
             assertThat(entity.doPersistCount).isEqualTo(1);
             assertThat(entity.isPersisted()).isFalse();
@@ -239,7 +239,7 @@ class EntityTest {
             entity.markDirty();
 
             assertThatThrownBy(() -> entity.refresh())
-                .isSameAs(entity.doLoadException);
+            .isSameAs(entity.doLoadException);
 
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isTrue();
@@ -274,7 +274,7 @@ class EntityTest {
             entity.markDirty();
 
             assertThatThrownBy(() -> entity.persist())
-                .isSameAs(entity.doPersistException);
+            .isSameAs(entity.doPersistException);
 
             assertThat(entity.doPersistCount).isEqualTo(1);
             assertThat(entity.isPersisted()).isTrue();

@@ -1,4 +1,4 @@
-package org.yashkov.entity;
+package org.yashkov.entity.inheritance;
 
 public class NoSuchEntityException extends Exception {
     private static final long serialVersionUID = 1L;
