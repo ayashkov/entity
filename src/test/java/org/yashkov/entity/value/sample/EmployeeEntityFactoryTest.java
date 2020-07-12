@@ -1,0 +1,145 @@
+package org.yashkov.entity.value.sample;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.yashkov.entity.value.sample.EmployeeEntityFactory.EmployeeEntity;
+
+@MockitoSettings(strictness = Strictness.STRICT_STUBS)
+class EmployeeEntityFactoryTest {
+    @Mock
+    private EmployeeRepository repository;
+
+    @InjectMocks
+    private EmployeeEntityFactory factory;
+
+    @Test
+    void instance_ReturnsDifferentEntity_Always()
+    {
+        EmployeeEntity ee1 = factory.instance();
+        EmployeeEntity ee2 = factory.instance();
+
+        assertThat(ee1).isNotNull();
+        assertThat(ee2).isNotNull();
+        assertThat(ee2).isNotSameAs(ee1);
+    }
+
+    @Nested
+    class Entity {
+        @Captor
+        private ArgumentCaptor<Employee> value;
+
+        private EmployeeEntity entity;
+
+        @BeforeEach
+        void setUp()
+        {
+            entity = factory.instance();
+        }
+
+        @Test
+        void hasDefaultProperties_Initially()
+        {
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void get_ReturnsSameInstance_Always()
+        {
+            ImmutableEmployee ie1 = entity.get();
+            ImmutableEmployee ie2 = entity.get();
+
+            assertThat(ie1).isNotNull();
+            assertThat(ie2).isNotNull();
+            assertThat(ie2).isSameAs(ie1);
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void modify_MarksDirtyReturnsSameInstance_Always()
+        {
+            Employee e1 = entity.modify();
+            Employee e2 = entity.modify();
+
+            assertThat(e1).isNotNull();
+            assertThat(e2).isNotNull();
+            assertThat(e2).isSameAs(e1);
+        }
+
+        @Test
+        void modify_MarksDirty_Always()
+        {
+            entity.modify();
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
+        }
+
+        @Test
+        void load_LoadsValue_WhenItExists()
+        {
+            doReturn(true).when(repository).load(value.capture());
+
+            assertThat(entity.load()).isSameAs(entity);
+
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+            assertThat(value.getValue()).isSameAs(entity.get());
+        }
+
+        @Test
+        void load_ClearsDirty_WhenValueExists()
+        {
+            entity.modify();
+
+            doReturn(true).when(repository).load(any());
+
+            assertThat(entity.load()).isSameAs(entity);
+
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void load_LeavesNotPersistedAndDirty_WhenValueDoesNotExist()
+        {
+            entity.modify();
+
+            doReturn(false).when(repository).load(any());
+
+            assertThat(entity.load()).isSameAs(entity);
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
+        }
+
+        @Test
+        void load_PropagatesException_WhenRepositoryLoadFails()
+        {
+            RuntimeException t = new RuntimeException("load");
+
+            entity.modify();
+
+            doThrow(t).when(repository).load(any());
+
+            assertThatThrownBy(() -> entity.load()).isSameAs(t);
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
+        }
+    }
+}
