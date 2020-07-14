@@ -94,13 +94,17 @@ class EmployeeEntityFactoryTest {
         @Test
         void load_LoadsValue_WhenItExists()
         {
-            doReturn(true).when(repository).load(value.capture());
+            ImmutableEmployee ov = entity.get();
+            Employee nv = new Employee();
+
+            doReturn(nv).when(repository).load(value.capture());
 
             assertThat(entity.load()).isSameAs(entity);
 
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
-            assertThat(value.getValue()).isSameAs(entity.get());
+            assertThat(value.getValue()).isSameAs(ov);
+            assertThat(entity.get()).isSameAs(nv);
         }
 
         @Test
@@ -108,7 +112,7 @@ class EmployeeEntityFactoryTest {
         {
             entity.modify();
 
-            doReturn(true).when(repository).load(any());
+            doReturn(new Employee()).when(repository).load(any());
 
             assertThat(entity.load()).isSameAs(entity);
 
@@ -119,14 +123,17 @@ class EmployeeEntityFactoryTest {
         @Test
         void load_LeavesNotPersistedAndDirty_WhenValueDoesNotExist()
         {
+            ImmutableEmployee ov = entity.get();
+
             entity.modify();
 
-            doReturn(false).when(repository).load(any());
+            doReturn(null).when(repository).load(any());
 
             assertThat(entity.load()).isSameAs(entity);
 
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
+            assertThat(entity.get()).isSameAs(ov);
         }
 
         @Test
@@ -204,7 +211,7 @@ class EmployeeEntityFactoryTest {
         @Test
         void persist_UpdatesValue_WhenDirtyAndPersisted()
         {
-            doReturn(true).when(repository).load(any());
+            doReturn(new Employee()).when(repository).load(any());
 
             entity.load().modify();
 
@@ -221,7 +228,7 @@ class EmployeeEntityFactoryTest {
         void persist_InsertsValue_WhenFirstUpdateReturnsFalse()
             throws Exception
         {
-            doReturn(true).when(repository).load(any());
+            doReturn(new Employee()).when(repository).load(any());
 
             entity.load().modify();
 
@@ -240,7 +247,7 @@ class EmployeeEntityFactoryTest {
         void persist_ThrowsException_WhenSecondInsertIndicatesDuplicate()
             throws Exception
         {
-            doReturn(true).when(repository).load(any());
+            doReturn(new Employee()).when(repository).load(any());
 
             entity.load().modify();
 

@@ -14,7 +14,7 @@ public class EmployeeEntityFactory {
     }
 
     public class EmployeeEntity {
-        private final Employee value = new Employee();
+        private Employee value = new Employee();
 
         private boolean persisted = false;
 
@@ -22,7 +22,10 @@ public class EmployeeEntityFactory {
 
         public EmployeeEntity load()
         {
-            if (repository.load(value)) {
+            Employee nv = repository.load(value);
+
+            if (nv != null) {
+                value = nv;
                 persisted = true;
                 dirty = false;
             }
