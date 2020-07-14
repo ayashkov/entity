@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -139,6 +141,115 @@ class EmployeeEntityFactoryTest {
             assertThatThrownBy(() -> entity.load()).isSameAs(t);
 
             assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
+        }
+
+        @Test
+        void persist_DoesNothing_WhenNotDirty()
+        {
+            assertThat(entity.persist()).isSameAs(entity);
+
+            verifyNoInteractions(repository);
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void persist_InsertsValue_WhenDirtyAndNotPersisted() throws Exception
+        {
+            entity.modify();
+
+            assertThat(entity.persist()).isSameAs(entity);
+
+            verify(repository).insert(value.capture());
+
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+            assertThat(value.getValue()).isSameAs(entity.get());
+        }
+
+        @Test
+        void persist_UpdatesValue_WhenFirstInsertIndicatesDuplicate()
+            throws Exception
+        {
+            entity.modify();
+
+            doThrow(new DuplicateEntityException()).when(repository).insert(any());
+            doReturn(true).when(repository).update(value.capture());
+
+            assertThat(entity.persist()).isSameAs(entity);
+
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+            assertThat(value.getValue()).isSameAs(entity.get());
+        }
+
+        @Test
+        void persist_LeavesNotPersistedAndDirty_WhenSecondUpdateReturnsFalse()
+            throws Exception
+        {
+            entity.modify();
+
+            doThrow(new DuplicateEntityException()).when(repository).insert(any());
+            doReturn(false).when(repository).update(any());
+
+            assertThat(entity.persist()).isSameAs(entity);
+
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
+        }
+
+        @Test
+        void persist_UpdatesValue_WhenDirtyAndPersisted()
+        {
+            doReturn(true).when(repository).load(any());
+
+            entity.load().modify();
+
+            doReturn(true).when(repository).update(value.capture());
+
+            assertThat(entity.persist()).isSameAs(entity);
+
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+            assertThat(value.getValue()).isSameAs(entity.get());
+        }
+
+        @Test
+        void persist_InsertsValue_WhenFirstUpdateReturnsFalse()
+            throws Exception
+        {
+            doReturn(true).when(repository).load(any());
+
+            entity.load().modify();
+
+            doReturn(false).when(repository).update(any());
+
+            assertThat(entity.persist()).isSameAs(entity);
+
+            verify(repository).insert(value.capture());
+
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+            assertThat(value.getValue()).isSameAs(entity.get());
+        }
+
+        @Test
+        void persist_LeavesPersistedAndDirty_WhenSecondInsertIndicatesDuplicate()
+            throws Exception
+        {
+            doReturn(true).when(repository).load(any());
+
+            entity.load().modify();
+
+            doReturn(false).when(repository).update(any());
+            doThrow(new DuplicateEntityException()).when(repository)
+                .insert(any());
+
+            assertThat(entity.persist()).isSameAs(entity);
+
+            assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isTrue();
         }
     }
