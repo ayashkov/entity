@@ -186,7 +186,7 @@ class EmployeeEntityFactoryTest {
         }
 
         @Test
-        void persist_LeavesNotPersistedAndDirty_WhenSecondUpdateReturnsFalse()
+        void persist_ThrowsException_WhenSecondUpdateReturnsFalse()
             throws Exception
         {
             entity.modify();
@@ -194,7 +194,8 @@ class EmployeeEntityFactoryTest {
             doThrow(new DuplicateEntityException()).when(repository).insert(any());
             doReturn(false).when(repository).update(any());
 
-            assertThat(entity.persist()).isSameAs(entity);
+            assertThatThrownBy(() -> entity.persist())
+                .isInstanceOf(IllegalStateException.class);
 
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
@@ -236,7 +237,7 @@ class EmployeeEntityFactoryTest {
         }
 
         @Test
-        void persist_LeavesPersistedAndDirty_WhenSecondInsertIndicatesDuplicate()
+        void persist_ThrowsException_WhenSecondInsertIndicatesDuplicate()
             throws Exception
         {
             doReturn(true).when(repository).load(any());
@@ -247,7 +248,8 @@ class EmployeeEntityFactoryTest {
             doThrow(new DuplicateEntityException()).when(repository)
                 .insert(any());
 
-            assertThat(entity.persist()).isSameAs(entity);
+            assertThatThrownBy(() -> entity.persist())
+                .isInstanceOf(IllegalStateException.class);
 
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isTrue();

@@ -32,11 +32,15 @@ public class EmployeeEntityFactory {
 
         public EmployeeEntity persist()
         {
-            if (dirty)
-                if (persisted ? upsert() : indate()) {
-                    persisted = true;
-                    dirty = false;
-                }
+            if (dirty) {
+                if (persisted)
+                    upsert();
+                else
+                    indate();
+
+                persisted = true;
+                dirty = false;
+            }
 
             return this;
         }
@@ -68,28 +72,24 @@ public class EmployeeEntityFactory {
             return dirty;
         }
 
-        private boolean indate()
+        private void indate()
         {
             try {
                 repository.insert(value);
             } catch (DuplicateEntityException ex) {
                 if (!repository.update(value))
-                    return false;
+                    throw new IllegalStateException("indate failed", ex);
             }
-
-            return true;
         }
 
-        private boolean upsert()
+        private void upsert()
         {
             if (!repository.update(value))
                 try {
                     repository.insert(value);
                 } catch (DuplicateEntityException ex) {
-                    return false;
+                    throw new IllegalStateException("upsert failed", ex);
                 }
-
-            return true;
         }
     }
 }
