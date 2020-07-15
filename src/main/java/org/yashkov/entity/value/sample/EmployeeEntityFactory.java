@@ -22,12 +22,14 @@ public class EmployeeEntityFactory {
 
         public EmployeeEntity load()
         {
-            Employee nv = repository.load(value);
+            if (dirty) {
+                Employee nv = repository.load(value);
 
-            if (nv != null) {
-                value = nv;
-                persisted = true;
-                dirty = false;
+                if (nv != null) {
+                    value = nv;
+                    persisted = true;
+                    dirty = false;
+                }
             }
 
             return this;
