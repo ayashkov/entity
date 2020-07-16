@@ -52,6 +52,11 @@ public class EmployeeEntityFactory {
 
         public EmployeeEntity delete()
         {
+            if (persisted || dirty) {
+                repository.delete(value);
+                persisted = false;
+            }
+
             return this;
         }
 

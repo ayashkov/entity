@@ -1,11 +1,11 @@
 package org.yashkov.entity.value.sample;
 
 public interface EmployeeRepository {
-    Employee load(Employee value);
+    Employee load(ImmutableEmployee value);
 
-    void insert(Employee value) throws DuplicateEntityException;
+    void insert(ImmutableEmployee value) throws DuplicateEntityException;
 
-    boolean update(Employee value);
+    boolean update(ImmutableEmployee value);
 
-    boolean delete(Employee value);
+    void delete(ImmutableEmployee value);
 }

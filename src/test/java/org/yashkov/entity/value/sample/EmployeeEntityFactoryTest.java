@@ -351,5 +351,72 @@ class EmployeeEntityFactoryTest {
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isTrue();
         }
+
+        @Test
+        void delete_DoesNothing_WhenNotPersistedAndNotDirty()
+        {
+            ImmutableEmployee ov = entity.get();
+
+            assertThat(entity.delete()).isSameAs(entity);
+
+            verifyNoInteractions(repository);
+
+            assertThat(entity.get()).isSameAs(ov);
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void delete_Deletes_WhenDirty()
+        {
+            Employee ov = entity.modify();
+
+            assertThat(entity.delete()).isSameAs(entity);
+
+            verify(repository).delete(value.capture());
+
+            assertThat(entity.get()).isSameAs(ov);
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isTrue();
+            assertThat(value.getValue()).isSameAs(ov);
+        }
+
+        @Test
+        void delete_Deletes_WhenLoaded()
+        {
+            entity.modify();
+
+            doReturn(new Employee()).when(repository).load(any());
+
+            ImmutableEmployee ov = entity.load().get();
+
+            assertThat(entity.delete()).isSameAs(entity);
+
+            verify(repository).delete(value.capture());
+
+            assertThat(entity.get()).isSameAs(ov);
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+            assertThat(value.getValue()).isSameAs(ov);
+        }
+
+        @Test
+        void delete_PropagatesException_WhenRepositoryDeleteFails()
+        {
+            entity.modify();
+
+            doReturn(new Employee()).when(repository).load(any());
+
+            RuntimeException t = new RuntimeException("delete");
+            ImmutableEmployee ov = entity.load().get();
+
+            doThrow(t).when(repository).delete(any());
+
+            assertThatThrownBy(() -> entity.delete()).isSameAs(t);
+
+            assertThat(entity.get()).isSameAs(ov);
+            assertThat(entity.isPersisted()).isTrue();
+            assertThat(entity.isDirty()).isFalse();
+        }
     }
 }
