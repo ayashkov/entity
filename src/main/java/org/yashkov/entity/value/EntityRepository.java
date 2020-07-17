@@ -1,9 +1,11 @@
 package org.yashkov.entity.value;
 
-import java.util.stream.Stream;
+public interface EntityRepository<R, W extends R> {
+    W load(R value);
 
-public interface EntityRepository<K, E extends Entity<K, ?, ?>> {
-    public E instance(K key);
+    void insert(R value) throws DuplicateEntityException;
 
-    public Stream<E> search(SearchCriteria criteria);
+    boolean update(R value);
+
+    void delete(R value);
 }

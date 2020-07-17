@@ -1,5 +1,7 @@
 package org.yashkov.entity.value.sample;
 
+import org.yashkov.entity.value.DuplicateEntityException;
+
 public class EmployeeEntityFactory {
     private final EmployeeRepository repository;
 

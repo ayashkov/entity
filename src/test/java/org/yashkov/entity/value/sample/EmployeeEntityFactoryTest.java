@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.yashkov.entity.value.DuplicateEntityException;
 import org.yashkov.entity.value.sample.EmployeeEntityFactory.EmployeeEntity;
 
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
@@ -206,8 +207,8 @@ class EmployeeEntityFactoryTest {
             doReturn(false).when(repository).update(any());
 
             assertThatThrownBy(() -> entity.persist())
-                .isInstanceOf(IllegalStateException.class)
-                .hasCauseInstanceOf(DuplicateEntityException.class);
+            .isInstanceOf(IllegalStateException.class)
+            .hasCauseInstanceOf(DuplicateEntityException.class);
 
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
@@ -300,11 +301,11 @@ class EmployeeEntityFactoryTest {
 
             doReturn(false).when(repository).update(any());
             doThrow(new DuplicateEntityException()).when(repository)
-                .insert(any());
+            .insert(any());
 
             assertThatThrownBy(() -> entity.persist())
-                .isInstanceOf(IllegalStateException.class)
-                .hasCauseInstanceOf(DuplicateEntityException.class);
+            .isInstanceOf(IllegalStateException.class)
+            .hasCauseInstanceOf(DuplicateEntityException.class);
 
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isTrue();
