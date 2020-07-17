@@ -1,24 +1,11 @@
 package org.yashkov.entity.value.sample;
 
 public class Employee implements ImmutableEmployee {
-    private Integer id = null;
-
     private String employeeID = null;
 
     private String sn = null;
 
     private String givenName = null;
-
-    @Override
-    public Integer getId()
-    {
-        return id;
-    }
-
-    public void setId(Integer id)
-    {
-        this.id = id;
-    }
 
     @Override
     public String getEmployeeID()
