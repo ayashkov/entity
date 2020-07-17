@@ -1,4 +1,4 @@
-package org.yashkov.entity.value;
+package org.yashkov.entity;
 
 public interface SearchCriteria {
 }

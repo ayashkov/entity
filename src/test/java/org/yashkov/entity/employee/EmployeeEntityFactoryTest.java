@@ -1,4 +1,4 @@
-package org.yashkov.entity.value.sample;
+package org.yashkov.entity.employee;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,8 +17,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.yashkov.entity.value.DuplicateEntityException;
-import org.yashkov.entity.value.sample.EmployeeEntityFactory.EmployeeEntity;
+import org.yashkov.entity.DuplicateEntityException;
+import org.yashkov.entity.employee.EmployeeEntityFactory.EmployeeEntity;
 
 @MockitoSettings(strictness = Strictness.STRICT_STUBS)
 class EmployeeEntityFactoryTest {

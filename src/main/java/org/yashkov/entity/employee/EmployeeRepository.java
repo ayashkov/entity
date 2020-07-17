@@ -1,6 +1,6 @@
-package org.yashkov.entity.value.sample;
+package org.yashkov.entity.employee;
 
-import org.yashkov.entity.value.EntityRepository;
+import org.yashkov.entity.EntityRepository;
 
 public interface EmployeeRepository
 extends EntityRepository<ImmutableEmployee, Employee> {

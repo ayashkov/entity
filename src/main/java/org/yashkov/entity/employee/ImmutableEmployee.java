@@ -1,4 +1,4 @@
-package org.yashkov.entity.value.sample;
+package org.yashkov.entity.employee;
 
 public interface ImmutableEmployee {
     String getEmployeeID();
