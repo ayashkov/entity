@@ -13,9 +13,9 @@ public class Employee implements ImmutableEmployee {
         return employeeID;
     }
 
-    public void setEmployeeID(String employeeID)
+    public void setEmployeeID(String id)
     {
-        this.employeeID = employeeID;
+        employeeID = id;
     }
 
     @Override

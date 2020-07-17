@@ -1,6 +1,9 @@
-package org.yashkov.entity.employee;
+package org.yashkov.persistance.memory;
 
 import org.yashkov.entity.DuplicateEntityException;
+import org.yashkov.entity.employee.Employee;
+import org.yashkov.entity.employee.EmployeeRepository;
+import org.yashkov.entity.employee.ImmutableEmployee;
 
 public class EmployeeRepositoryImpl implements EmployeeRepository {
     @Override
