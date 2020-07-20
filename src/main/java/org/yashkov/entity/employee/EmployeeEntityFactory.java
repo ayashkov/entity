@@ -12,15 +12,31 @@ public class EmployeeEntityFactory {
 
     public EmployeeEntity instance()
     {
-        return new EmployeeEntity(repository, new Employee());
+        return instance(new Employee());
     }
 
-    public static class EmployeeEntity
-    extends Entity<ImmutableEmployee, Employee, EmployeeEntity> {
-        private EmployeeEntity(EmployeeRepository repository,
-            Employee value)
+    public EmployeeEntity instance(Employee value)
+    {
+        return new EmployeeEntity(value);
+    }
+
+    public class EmployeeEntity
+        extends Entity<ImmutableEmployee, Employee, EmployeeEntity> {
+        private EmployeeEntity(Employee value)
         {
             super(repository, value);
         }
+//
+//        public EmployeeEntity employeeID(String id)
+//        {
+//            modify().setEmployeeID(id);
+//
+//            return this;
+//        }
+//
+//        public EmployeeEntity getManager()
+//        {
+//            return instance().employeeID(get().getManagerID());
+//        }
     }
 }

@@ -1,4 +1,4 @@
 package org.yashkov.entity;
 
-public interface SearchCriteria {
+public interface SearchCriteria<R> {
 }

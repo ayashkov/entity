@@ -8,6 +8,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -98,7 +100,7 @@ class EmployeeEntityFactoryTest {
             Employee ov = entity.modify();
             Employee nv = new Employee();
 
-            doReturn(nv).when(repository).load(value.capture());
+            doReturn(Optional.of(nv)).when(repository).load(value.capture());
 
             assertThat(entity.load()).isSameAs(entity);
 
@@ -127,7 +129,7 @@ class EmployeeEntityFactoryTest {
         {
             Employee ov = entity.modify();
 
-            doReturn(null).when(repository).load(any());
+            doReturn(Optional.empty()).when(repository).load(any());
 
             assertThat(entity.load()).isSameAs(entity);
 
@@ -253,7 +255,7 @@ class EmployeeEntityFactoryTest {
         {
             entity.modify();
 
-            doReturn(new Employee()).when(repository).load(any());
+            doReturn(Optional.of(new Employee())).when(repository).load(any());
 
             Employee ov = entity.load().modify();
 
@@ -273,7 +275,7 @@ class EmployeeEntityFactoryTest {
         {
             entity.modify();
 
-            doReturn(new Employee()).when(repository).load(any());
+            doReturn(Optional.of(new Employee())).when(repository).load(any());
 
             Employee ov = entity.load().modify();
 
@@ -295,7 +297,7 @@ class EmployeeEntityFactoryTest {
         {
             entity.modify();
 
-            doReturn(new Employee()).when(repository).load(any());
+            doReturn(Optional.of(new Employee())).when(repository).load(any());
 
             Employee ov = entity.load().modify();
 
@@ -318,7 +320,7 @@ class EmployeeEntityFactoryTest {
         {
             entity.modify();
 
-            doReturn(new Employee()).when(repository).load(any());
+            doReturn(Optional.of(new Employee())).when(repository).load(any());
 
             Employee ov = entity.load().modify();
             RuntimeException t = new RuntimeException("update");
@@ -338,7 +340,7 @@ class EmployeeEntityFactoryTest {
         {
             entity.modify();
 
-            doReturn(new Employee()).when(repository).load(any());
+            doReturn(Optional.of(new Employee())).when(repository).load(any());
 
             Employee ov = entity.load().modify();
             RuntimeException t = new RuntimeException("insert");
@@ -387,7 +389,7 @@ class EmployeeEntityFactoryTest {
         {
             entity.modify();
 
-            doReturn(new Employee()).when(repository).load(any());
+            doReturn(Optional.of(new Employee())).when(repository).load(any());
 
             ImmutableEmployee ov = entity.load().get();
 
@@ -406,7 +408,7 @@ class EmployeeEntityFactoryTest {
         {
             entity.modify();
 
-            doReturn(new Employee()).when(repository).load(any());
+            doReturn(Optional.of(new Employee())).when(repository).load(any());
 
             RuntimeException t = new RuntimeException("delete");
             ImmutableEmployee ov = entity.load().get();

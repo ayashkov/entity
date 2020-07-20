@@ -6,4 +6,6 @@ public interface ImmutableEmployee {
     String getSn();
 
     String getGivenName();
+
+    String getManagerID();
 }

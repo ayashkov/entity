@@ -1,5 +1,7 @@
 package org.yashkov.entity;
 
+import java.util.Optional;
+
 public abstract class Entity<R, W extends R, E extends Entity<R, W, E>> {
     private final EntityRepository<R, W> repository;
 
@@ -19,10 +21,10 @@ public abstract class Entity<R, W extends R, E extends Entity<R, W, E>> {
     public E load()
     {
         if (dirty) {
-            W nv = repository.load(value);
+            Optional<W> nv = repository.load(value);
 
-            if (nv != null) {
-                value = nv;
+            if (nv.isPresent()) {
+                value = nv.get();
                 persisted = true;
                 dirty = false;
             }

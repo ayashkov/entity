@@ -7,6 +7,8 @@ public class Employee implements ImmutableEmployee {
 
     private String givenName = null;
 
+    private String managerID = null;
+
     @Override
     public String getEmployeeID()
     {
@@ -38,5 +40,16 @@ public class Employee implements ImmutableEmployee {
     public void setGivenName(String name)
     {
         givenName = name;
+    }
+
+    @Override
+    public String getManagerID()
+    {
+        return managerID;
+    }
+
+    public void setManagerID(String id)
+    {
+        managerID = id;
     }
 }

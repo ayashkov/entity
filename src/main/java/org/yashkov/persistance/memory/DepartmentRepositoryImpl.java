@@ -1,5 +1,7 @@
 package org.yashkov.persistance.memory;
 
+import java.util.Optional;
+
 import org.yashkov.entity.DuplicateEntityException;
 import org.yashkov.entity.department.Department;
 import org.yashkov.entity.department.DepartmentRepository;
@@ -7,10 +9,10 @@ import org.yashkov.entity.department.ImmutableDepartment;
 
 public class DepartmentRepositoryImpl implements DepartmentRepository {
     @Override
-    public Department load(ImmutableDepartment value)
+    public Optional<Department> load(ImmutableDepartment value)
     {
         // TODO Auto-generated method stub
-        return null;
+        return Optional.empty();
     }
 
     @Override
