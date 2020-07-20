@@ -3,11 +3,23 @@ package org.yashkov.entity;
 import java.util.Optional;
 
 public interface EntityRepository<R, W extends R> {
-    Optional<W> load(R value);
+    default Optional<W> load(R value)
+    {
+        throw new UnsupportedOperationException("load is not supported");
+    }
 
-    void insert(R value) throws DuplicateEntityException;
+    default void insert(R value) throws DuplicateEntityException
+    {
+        throw new UnsupportedOperationException("insert is not supported");
+    }
 
-    boolean update(R value);
+    default boolean update(R value)
+    {
+        throw new UnsupportedOperationException("load is not supported");
+    }
 
-    void delete(R value);
+    default void delete(R value)
+    {
+        throw new UnsupportedOperationException("delete is not supported");
+    }
 }
