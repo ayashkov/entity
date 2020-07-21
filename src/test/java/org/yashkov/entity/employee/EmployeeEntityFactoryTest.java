@@ -421,5 +421,24 @@ class EmployeeEntityFactoryTest {
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
         }
+
+        @Test
+        void getManager_ReturnsEmpty_WhenManagerIdIsNotSet()
+        {
+            assertThat(entity.getManager()).isEmpty();
+        }
+
+        @Test
+        void getManager_ReturnsNewDirtyNonPersistedEntity_WhenManagerIdIsSet()
+        {
+            entity.managerID("1222");
+
+            EmployeeEntity m = entity.getManager().get();
+
+            assertThat(m).isNotSameAs(entity);
+            assertThat(m.isDirty()).isTrue();
+            assertThat(m.isPersisted()).isFalse();
+            assertThat(m.get().getEmployeeID()).isEqualTo("1222");
+        }
     }
 }
