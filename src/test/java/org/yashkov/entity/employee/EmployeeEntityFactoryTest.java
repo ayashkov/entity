@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,17 @@ class EmployeeEntityFactoryTest {
     private EmployeeEntityFactory factory;
 
     @Test
+    void empty_ReturnsDifferentEntity_Always()
+    {
+        EmployeeEntity ee1 = factory.empty();
+        EmployeeEntity ee2 = factory.empty();
+
+        assertThat(ee1).isNotNull();
+        assertThat(ee2).isNotNull();
+        assertThat(ee2).isNotSameAs(ee1);
+    }
+
+    @Test
     void instance_ReturnsDifferentEntity_Always()
     {
         EmployeeEntity ee1 = factory.instance();
@@ -42,7 +54,92 @@ class EmployeeEntityFactoryTest {
     }
 
     @Nested
-    class Entity {
+    class EmptyEntity {
+        private EmployeeEntity entity;
+
+        @BeforeEach
+        void setUp()
+        {
+            entity = factory.empty();
+        }
+
+        @Test
+        void hasDefaultProperties_Initially()
+        {
+            assertThat(entity.isPresent()).isFalse();
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void get_ThrowsException_Always()
+        {
+            assertThatThrownBy(() -> entity.get())
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessageContaining("entity");
+
+            assertThat(entity.isPresent()).isFalse();
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void modify_ThrowsException_Always()
+        {
+            assertThatThrownBy(() -> entity.modify())
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessageContaining("entity");
+
+            assertThat(entity.isPresent()).isFalse();
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void load_ThrowsException_Always()
+        {
+            assertThatThrownBy(() -> entity.load())
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessageContaining("entity");
+
+            verifyNoInteractions(repository);
+
+            assertThat(entity.isPresent()).isFalse();
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void persist_ThrowsException_Always()
+        {
+            assertThatThrownBy(() -> entity.persist())
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessageContaining("entity");
+
+            verifyNoInteractions(repository);
+
+            assertThat(entity.isPresent()).isFalse();
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+
+        @Test
+        void delete_ThrowsException_Always()
+        {
+            assertThatThrownBy(() -> entity.delete())
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessageContaining("entity");
+
+            verifyNoInteractions(repository);
+
+            assertThat(entity.isPresent()).isFalse();
+            assertThat(entity.isPersisted()).isFalse();
+            assertThat(entity.isDirty()).isFalse();
+        }
+    }
+
+    @Nested
+    class PresentEntity {
         @Captor
         private ArgumentCaptor<Employee> value;
 
@@ -57,6 +154,7 @@ class EmployeeEntityFactoryTest {
         @Test
         void hasDefaultProperties_Initially()
         {
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isFalse();
         }
@@ -70,6 +168,7 @@ class EmployeeEntityFactoryTest {
             assertThat(ie1).isNotNull();
             assertThat(ie2).isNotNull();
             assertThat(ie2).isSameAs(ie1);
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isFalse();
         }
@@ -90,6 +189,7 @@ class EmployeeEntityFactoryTest {
         {
             entity.modify();
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
         }
@@ -104,6 +204,7 @@ class EmployeeEntityFactoryTest {
 
             assertThat(entity.load()).isSameAs(entity);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(nv);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
@@ -119,6 +220,7 @@ class EmployeeEntityFactoryTest {
 
             verifyNoInteractions(repository);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isFalse();
@@ -133,6 +235,7 @@ class EmployeeEntityFactoryTest {
 
             assertThat(entity.load()).isSameAs(entity);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
@@ -148,6 +251,7 @@ class EmployeeEntityFactoryTest {
 
             assertThatThrownBy(() -> entity.load()).isSameAs(t);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
@@ -162,6 +266,7 @@ class EmployeeEntityFactoryTest {
 
             verifyNoInteractions(repository);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isFalse();
@@ -176,6 +281,7 @@ class EmployeeEntityFactoryTest {
 
             verify(repository).insert(value.capture());
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
@@ -193,6 +299,7 @@ class EmployeeEntityFactoryTest {
 
             assertThat(entity.persist()).isSameAs(entity);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
@@ -212,6 +319,7 @@ class EmployeeEntityFactoryTest {
             .isInstanceOf(IllegalStateException.class)
             .hasCauseInstanceOf(DuplicateEntityException.class);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
@@ -228,6 +336,7 @@ class EmployeeEntityFactoryTest {
 
             assertThatThrownBy(() -> entity.persist()).isSameAs(t);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
@@ -245,6 +354,7 @@ class EmployeeEntityFactoryTest {
 
             assertThatThrownBy(() -> entity.persist()).isSameAs(t);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
@@ -263,6 +373,7 @@ class EmployeeEntityFactoryTest {
 
             assertThat(entity.persist()).isSameAs(entity);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
@@ -285,6 +396,7 @@ class EmployeeEntityFactoryTest {
 
             verify(repository).insert(value.capture());
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
@@ -309,6 +421,7 @@ class EmployeeEntityFactoryTest {
             .isInstanceOf(IllegalStateException.class)
             .hasCauseInstanceOf(DuplicateEntityException.class);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isTrue();
@@ -329,6 +442,7 @@ class EmployeeEntityFactoryTest {
 
             assertThatThrownBy(() -> entity.persist()).isSameAs(t);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isTrue();
@@ -350,6 +464,7 @@ class EmployeeEntityFactoryTest {
 
             assertThatThrownBy(() -> entity.persist()).isSameAs(t);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isTrue();
@@ -364,6 +479,7 @@ class EmployeeEntityFactoryTest {
 
             verifyNoInteractions(repository);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isFalse();
@@ -378,6 +494,7 @@ class EmployeeEntityFactoryTest {
 
             verify(repository).delete(value.capture());
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isTrue();
@@ -397,6 +514,7 @@ class EmployeeEntityFactoryTest {
 
             verify(repository).delete(value.capture());
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isFalse();
             assertThat(entity.isDirty()).isFalse();
@@ -417,6 +535,7 @@ class EmployeeEntityFactoryTest {
 
             assertThatThrownBy(() -> entity.delete()).isSameAs(t);
 
+            assertThat(entity.isPresent()).isTrue();
             assertThat(entity.get()).isSameAs(ov);
             assertThat(entity.isPersisted()).isTrue();
             assertThat(entity.isDirty()).isFalse();
@@ -425,20 +544,21 @@ class EmployeeEntityFactoryTest {
         @Test
         void getManager_ReturnsEmpty_WhenManagerIdIsNotSet()
         {
-            assertThat(entity.getManager()).isEmpty();
+            assertThat(entity.getManager().isPresent()).isFalse();
         }
 
         @Test
-        void getManager_ReturnsNewDirtyNonPersistedEntity_WhenManagerIdIsSet()
+        void getManager_ReturnsPresentNonPersistedDirty_WhenManagerIdIsSet()
         {
             entity.managerID("1222");
 
-            EmployeeEntity m = entity.getManager().get();
+            EmployeeEntity mgr = entity.getManager();
 
-            assertThat(m).isNotSameAs(entity);
-            assertThat(m.isDirty()).isTrue();
-            assertThat(m.isPersisted()).isFalse();
-            assertThat(m.get().getEmployeeID()).isEqualTo("1222");
+            assertThat(mgr).isNotSameAs(entity);
+            assertThat(mgr.isPresent()).isTrue();
+            assertThat(mgr.isPersisted()).isFalse();
+            assertThat(mgr.isDirty()).isTrue();
+            assertThat(mgr.get().getEmployeeID()).isEqualTo("1222");
         }
     }
 }

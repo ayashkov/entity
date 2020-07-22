@@ -1,5 +1,6 @@
 package org.yashkov.entity;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public abstract class Entity<R, W extends R, E extends Entity<R, W, E>> {
@@ -17,9 +18,41 @@ public abstract class Entity<R, W extends R, E extends Entity<R, W, E>> {
         this.value = value;
     }
 
+    public boolean isPresent()
+    {
+        return value != null;
+    }
+
+    public boolean isPersisted()
+    {
+        return persisted;
+    }
+
+    public boolean isDirty()
+    {
+        return dirty;
+    }
+
+    public R get()
+    {
+        checkValue();
+
+        return value;
+    }
+
+    public W modify()
+    {
+        checkValue();
+        dirty = true;
+
+        return value;
+    }
+
     @SuppressWarnings("unchecked")
     public E load()
     {
+        checkValue();
+
         if (dirty) {
             Optional<W> nv = repository.load(value);
 
@@ -36,6 +69,8 @@ public abstract class Entity<R, W extends R, E extends Entity<R, W, E>> {
     @SuppressWarnings("unchecked")
     public E persist()
     {
+        checkValue();
+
         if (dirty) {
             if (persisted)
                 upsert();
@@ -52,6 +87,8 @@ public abstract class Entity<R, W extends R, E extends Entity<R, W, E>> {
     @SuppressWarnings("unchecked")
     public E delete()
     {
+        checkValue();
+
         if (persisted || dirty) {
             repository.delete(value);
             persisted = false;
@@ -60,26 +97,10 @@ public abstract class Entity<R, W extends R, E extends Entity<R, W, E>> {
         return (E)this;
     }
 
-    public R get()
+    private void checkValue()
     {
-        return value;
-    }
-
-    public W modify()
-    {
-        dirty = true;
-
-        return value;
-    }
-
-    public boolean isPersisted()
-    {
-        return persisted;
-    }
-
-    public boolean isDirty()
-    {
-        return dirty;
+        if (value == null)
+            throw new NoSuchElementException("entity is not present");
     }
 
     private void indate()

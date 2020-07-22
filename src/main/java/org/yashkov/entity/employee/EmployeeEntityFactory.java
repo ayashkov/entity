@@ -1,7 +1,5 @@
 package org.yashkov.entity.employee;
 
-import java.util.Optional;
-
 import org.yashkov.entity.Entity;
 
 public class EmployeeEntityFactory {
@@ -12,14 +10,14 @@ public class EmployeeEntityFactory {
         this.repository = repository;
     }
 
-    public EmployeeEntity instance()
+    public EmployeeEntity empty()
     {
-        return instance(new Employee());
+        return new EmployeeEntity(null);
     }
 
-    public EmployeeEntity instance(Employee value)
+    public EmployeeEntity instance()
     {
-        return new EmployeeEntity(value);
+        return new EmployeeEntity(new Employee());
     }
 
     public class EmployeeEntity
@@ -43,12 +41,11 @@ public class EmployeeEntityFactory {
             return this;
         }
 
-        public Optional<EmployeeEntity> getManager()
+        public EmployeeEntity getManager()
         {
             String id = get().getManagerID();
 
-            return id == null ? Optional.empty() :
-                Optional.of(instance().employeeID(id));
+            return id == null ? empty() : instance().employeeID(id);
         }
     }
 }
