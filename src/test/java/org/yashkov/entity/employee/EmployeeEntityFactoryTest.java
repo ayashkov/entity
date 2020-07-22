@@ -5,8 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -44,7 +42,7 @@ class EmployeeEntityFactoryTest {
     }
 
     @Nested
-    class EmptyEntity {
+    class Empty {
         private EmployeeEntity entity;
 
         @BeforeEach
@@ -55,10 +53,7 @@ class EmployeeEntityFactoryTest {
     }
 
     @Nested
-    class PresentEntity {
-        @Captor
-        private ArgumentCaptor<Employee> value;
-
+    class Present {
         private EmployeeEntity entity;
 
         @BeforeEach

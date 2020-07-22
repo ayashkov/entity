@@ -2,7 +2,6 @@ package org.yashkov.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -13,7 +12,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,13 +24,6 @@ import org.mockito.quality.Strictness;
 class EntityTest {
     @Mock
     private EntityRepository<ImmutableValue, Value> repository;
-
-    @Disabled
-    @Test
-    void test()
-    {
-        fail("Not yet implemented");
-    }
 
     @Nested
     class Empty {
