@@ -8,11 +8,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -25,503 +23,377 @@ class EntityTest {
     @Mock
     private EntityRepository<ImmutableValue, Value> repository;
 
-    @Nested
-    class Empty {
-        private TestEntity entity;
+    @Captor
+    private ArgumentCaptor<Value> value;
 
-        @BeforeEach
-        void setUp()
-        {
-            entity = empty();
-        }
+    private TestEntity entity;
 
-        @Test
-        void hasDefaultProperties_Initially()
-        {
-            assertThat(entity.isPresent()).isFalse();
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
-
-        @Test
-        void get_ThrowsException_Always()
-        {
-            assertThatThrownBy(() -> entity.get())
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessageContaining("entity");
-
-            assertThat(entity.isPresent()).isFalse();
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
-
-        @Test
-        void modify_ThrowsException_Always()
-        {
-            assertThatThrownBy(() -> entity.modify())
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessageContaining("entity");
-
-            assertThat(entity.isPresent()).isFalse();
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
-
-        @Test
-        void load_ThrowsException_Always()
-        {
-            assertThatThrownBy(() -> entity.load())
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessageContaining("entity");
-
-            verifyNoInteractions(repository);
-
-            assertThat(entity.isPresent()).isFalse();
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
-
-        @Test
-        void persist_ThrowsException_Always()
-        {
-            assertThatThrownBy(() -> entity.persist())
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessageContaining("entity");
-
-            verifyNoInteractions(repository);
-
-            assertThat(entity.isPresent()).isFalse();
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
-
-        @Test
-        void delete_ThrowsException_Always()
-        {
-            assertThatThrownBy(() -> entity.delete())
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessageContaining("entity");
-
-            verifyNoInteractions(repository);
-
-            assertThat(entity.isPresent()).isFalse();
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
+    @BeforeEach
+    void setUp()
+    {
+        entity = new TestEntity();
     }
 
-    @Nested
-    class Present {
-        @Captor
-        private ArgumentCaptor<Value> value;
+    @Test
+    void hasDefaultProperties_Initially()
+    {
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isFalse();
+    }
 
-        private TestEntity entity;
+    @Test
+    void get_ReturnsSameInstance_Always()
+    {
+        ImmutableValue v1 = entity.get();
+        ImmutableValue v2 = entity.get();
 
-        @BeforeEach
-        void setUp()
-        {
-            entity = instance();
-        }
+        assertThat(v1).isNotNull();
+        assertThat(v2).isNotNull();
+        assertThat(v2).isSameAs(v1);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isFalse();
+    }
 
-        @Test
-        void hasDefaultProperties_Initially()
-        {
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
+    @Test
+    void modify_ReturnsSameInstance_Always()
+    {
+        Value v1 = entity.modify();
+        Value v2 = entity.modify();
 
-        @Test
-        void get_ReturnsSameInstance_Always()
-        {
-            ImmutableValue v1 = entity.get();
-            ImmutableValue v2 = entity.get();
+        assertThat(v1).isNotNull();
+        assertThat(v2).isNotNull();
+        assertThat(v2).isSameAs(v1);
+    }
 
-            assertThat(v1).isNotNull();
-            assertThat(v2).isNotNull();
-            assertThat(v2).isSameAs(v1);
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
+    @Test
+    void modify_MarksDirty_Always()
+    {
+        entity.modify();
 
-        @Test
-        void modify_ReturnsSameInstance_Always()
-        {
-            Value v1 = entity.modify();
-            Value v2 = entity.modify();
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isTrue();
+    }
 
-            assertThat(v1).isNotNull();
-            assertThat(v2).isNotNull();
-            assertThat(v2).isSameAs(v1);
-        }
+    @Test
+    void load_LoadsAndClearsDirty_WhenDirtyValueExists()
+    {
+        Value ov = entity.modify();
+        Value nv = new Value();
 
-        @Test
-        void modify_MarksDirty_Always()
-        {
-            entity.modify();
+        doReturn(Optional.of(nv)).when(repository).load(value.capture());
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isTrue();
-        }
+        assertThat(entity.load()).isSameAs(entity);
 
-        @Test
-        void load_LoadsAndClearsDirty_WhenDirtyValueExists()
-        {
-            Value ov = entity.modify();
-            Value nv = new Value();
+        assertThat(entity.get()).isSameAs(nv);
+        assertThat(entity.isPersisted()).isTrue();
+        assertThat(entity.isDirty()).isFalse();
+        assertThat(value.getValue()).isSameAs(ov);
+    }
 
-            doReturn(Optional.of(nv)).when(repository).load(value.capture());
+    @Test
+    void load_DoesNothing_WhenNotDirty()
+    {
+        ImmutableValue ov = entity.get();
 
-            assertThat(entity.load()).isSameAs(entity);
+        assertThat(entity.load()).isSameAs(entity);
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(nv);
-            assertThat(entity.isPersisted()).isTrue();
-            assertThat(entity.isDirty()).isFalse();
-            assertThat(value.getValue()).isSameAs(ov);
-        }
+        verifyNoInteractions(repository);
 
-        @Test
-        void load_DoesNothing_WhenNotDirty()
-        {
-            ImmutableValue ov = entity.get();
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isFalse();
+    }
 
-            assertThat(entity.load()).isSameAs(entity);
+    @Test
+    void load_LeavesNotPersistedAndDirty_WhenValueDoesNotExist()
+    {
+        Value ov = entity.modify();
 
-            verifyNoInteractions(repository);
+        doReturn(Optional.empty()).when(repository).load(any());
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
+        assertThat(entity.load()).isSameAs(entity);
 
-        @Test
-        void load_LeavesNotPersistedAndDirty_WhenValueDoesNotExist()
-        {
-            Value ov = entity.modify();
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isTrue();
+    }
 
-            doReturn(Optional.empty()).when(repository).load(any());
+    @Test
+    void load_PropagatesException_WhenRepositoryLoadFails()
+    {
+        RuntimeException t = new RuntimeException("load");
+        Value ov = entity.modify();
 
-            assertThat(entity.load()).isSameAs(entity);
+        doThrow(t).when(repository).load(any());
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isTrue();
-        }
+        assertThatThrownBy(() -> entity.load()).isSameAs(t);
 
-        @Test
-        void load_PropagatesException_WhenRepositoryLoadFails()
-        {
-            RuntimeException t = new RuntimeException("load");
-            Value ov = entity.modify();
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isTrue();
+    }
 
-            doThrow(t).when(repository).load(any());
+    @Test
+    void persist_DoesNothing_WhenNotDirty()
+    {
+        ImmutableValue ov = entity.get();
 
-            assertThatThrownBy(() -> entity.load()).isSameAs(t);
+        assertThat(entity.persist()).isSameAs(entity);
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isTrue();
-        }
+        verifyNoInteractions(repository);
 
-        @Test
-        void persist_DoesNothing_WhenNotDirty()
-        {
-            ImmutableValue ov = entity.get();
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isFalse();
+    }
 
-            assertThat(entity.persist()).isSameAs(entity);
+    @Test
+    void persist_InsertsValue_WhenDirtyAndNotPersisted() throws Exception
+    {
+        Value ov = entity.modify();
 
-            verifyNoInteractions(repository);
+        assertThat(entity.persist()).isSameAs(entity);
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
+        verify(repository).insert(value.capture());
 
-        @Test
-        void persist_InsertsValue_WhenDirtyAndNotPersisted() throws Exception
-        {
-            Value ov = entity.modify();
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isTrue();
+        assertThat(entity.isDirty()).isFalse();
+        assertThat(value.getValue()).isSameAs(ov);
+    }
 
-            assertThat(entity.persist()).isSameAs(entity);
+    @Test
+    void persist_UpdatesValue_WhenFirstInsertIndicatesDuplicate()
+        throws Exception
+    {
+        Value ov = entity.modify();
 
-            verify(repository).insert(value.capture());
+        doThrow(new DuplicateEntityException()).when(repository).insert(any());
+        doReturn(true).when(repository).update(value.capture());
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isTrue();
-            assertThat(entity.isDirty()).isFalse();
-            assertThat(value.getValue()).isSameAs(ov);
-        }
+        assertThat(entity.persist()).isSameAs(entity);
 
-        @Test
-        void persist_UpdatesValue_WhenFirstInsertIndicatesDuplicate()
-            throws Exception
-        {
-            Value ov = entity.modify();
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isTrue();
+        assertThat(entity.isDirty()).isFalse();
+        assertThat(value.getValue()).isSameAs(ov);
+    }
 
-            doThrow(new DuplicateEntityException()).when(repository).insert(any());
-            doReturn(true).when(repository).update(value.capture());
+    @Test
+    void persist_ThrowsException_WhenSecondUpdateReturnsFalse()
+        throws Exception
+    {
+        Value ov = entity.modify();
 
-            assertThat(entity.persist()).isSameAs(entity);
+        doThrow(new DuplicateEntityException()).when(repository).insert(any());
+        doReturn(false).when(repository).update(any());
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isTrue();
-            assertThat(entity.isDirty()).isFalse();
-            assertThat(value.getValue()).isSameAs(ov);
-        }
-
-        @Test
-        void persist_ThrowsException_WhenSecondUpdateReturnsFalse()
-            throws Exception
-        {
-            Value ov = entity.modify();
-
-            doThrow(new DuplicateEntityException()).when(repository).insert(any());
-            doReturn(false).when(repository).update(any());
-
-            assertThatThrownBy(() -> entity.persist())
+        assertThatThrownBy(() -> entity.persist())
             .isInstanceOf(IllegalStateException.class)
             .hasCauseInstanceOf(DuplicateEntityException.class);
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isTrue();
-        }
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isTrue();
+    }
 
-        @Test
-        void persist_PropagatesException_WhenFirstInsertFails()
-            throws Exception
-        {
-            RuntimeException t = new RuntimeException("insert");
-            Value ov = entity.modify();
+    @Test
+    void persist_PropagatesException_WhenFirstInsertFails() throws Exception
+    {
+        RuntimeException t = new RuntimeException("insert");
+        Value ov = entity.modify();
 
-            doThrow(t).when(repository).insert(any());
+        doThrow(t).when(repository).insert(any());
 
-            assertThatThrownBy(() -> entity.persist()).isSameAs(t);
+        assertThatThrownBy(() -> entity.persist()).isSameAs(t);
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isTrue();
-        }
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isTrue();
+    }
 
-        @Test
-        void persist_PropagatesException_WhenSecondUpdateFails()
-            throws Exception
-        {
-            RuntimeException t = new RuntimeException("update");
-            Value ov = entity.modify();
+    @Test
+    void persist_PropagatesException_WhenSecondUpdateFails() throws Exception
+    {
+        RuntimeException t = new RuntimeException("update");
+        Value ov = entity.modify();
 
-            doThrow(new DuplicateEntityException()).when(repository).insert(any());
-            doThrow(t).when(repository).update(any());
+        doThrow(new DuplicateEntityException()).when(repository).insert(any());
+        doThrow(t).when(repository).update(any());
 
-            assertThatThrownBy(() -> entity.persist()).isSameAs(t);
+        assertThatThrownBy(() -> entity.persist()).isSameAs(t);
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isTrue();
-        }
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isTrue();
+    }
 
-        @Test
-        void persist_UpdatesValue_WhenDirtyAndPersisted()
-        {
-            entity.modify();
+    @Test
+    void persist_UpdatesValue_WhenDirtyAndPersisted()
+    {
+        entity.modify();
 
-            doReturn(Optional.of(new Value())).when(repository).load(any());
+        doReturn(Optional.of(new Value())).when(repository).load(any());
 
-            Value ov = entity.load().modify();
+        Value ov = entity.load().modify();
 
-            doReturn(true).when(repository).update(value.capture());
+        doReturn(true).when(repository).update(value.capture());
 
-            assertThat(entity.persist()).isSameAs(entity);
+        assertThat(entity.persist()).isSameAs(entity);
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isTrue();
-            assertThat(entity.isDirty()).isFalse();
-            assertThat(value.getValue()).isSameAs(ov);
-        }
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isTrue();
+        assertThat(entity.isDirty()).isFalse();
+        assertThat(value.getValue()).isSameAs(ov);
+    }
 
-        @Test
-        void persist_InsertsValue_WhenFirstUpdateReturnsFalse()
-            throws Exception
-        {
-            entity.modify();
+    @Test
+    void persist_InsertsValue_WhenFirstUpdateReturnsFalse() throws Exception
+    {
+        entity.modify();
 
-            doReturn(Optional.of(new Value())).when(repository).load(any());
+        doReturn(Optional.of(new Value())).when(repository).load(any());
 
-            Value ov = entity.load().modify();
+        Value ov = entity.load().modify();
 
-            doReturn(false).when(repository).update(any());
+        doReturn(false).when(repository).update(any());
 
-            assertThat(entity.persist()).isSameAs(entity);
+        assertThat(entity.persist()).isSameAs(entity);
 
-            verify(repository).insert(value.capture());
+        verify(repository).insert(value.capture());
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isTrue();
-            assertThat(entity.isDirty()).isFalse();
-            assertThat(value.getValue()).isSameAs(ov);
-        }
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isTrue();
+        assertThat(entity.isDirty()).isFalse();
+        assertThat(value.getValue()).isSameAs(ov);
+    }
 
-        @Test
-        void persist_ThrowsException_WhenSecondInsertIndicatesDuplicate()
-            throws Exception
-        {
-            entity.modify();
+    @Test
+    void persist_ThrowsException_WhenSecondInsertIndicatesDuplicate()
+        throws Exception
+    {
+        entity.modify();
 
-            doReturn(Optional.of(new Value())).when(repository).load(any());
+        doReturn(Optional.of(new Value())).when(repository).load(any());
 
-            Value ov = entity.load().modify();
+        Value ov = entity.load().modify();
 
-            doReturn(false).when(repository).update(any());
-            doThrow(new DuplicateEntityException()).when(repository)
-            .insert(any());
+        doReturn(false).when(repository).update(any());
+        doThrow(new DuplicateEntityException()).when(repository).insert(any());
 
-            assertThatThrownBy(() -> entity.persist())
+        assertThatThrownBy(() -> entity.persist())
             .isInstanceOf(IllegalStateException.class)
             .hasCauseInstanceOf(DuplicateEntityException.class);
 
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isTrue();
-            assertThat(entity.isDirty()).isTrue();
-        }
-
-        @Test
-        void persist_PropagatesException_WhenFirstUpdateFails()
-            throws Exception
-        {
-            entity.modify();
-
-            doReturn(Optional.of(new Value())).when(repository).load(any());
-
-            Value ov = entity.load().modify();
-            RuntimeException t = new RuntimeException("update");
-
-            doThrow(t).when(repository).update(any());
-
-            assertThatThrownBy(() -> entity.persist()).isSameAs(t);
-
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isTrue();
-            assertThat(entity.isDirty()).isTrue();
-        }
-
-        @Test
-        void persist_PropagatesException_WhenSecondInsertFails()
-            throws Exception
-        {
-            entity.modify();
-
-            doReturn(Optional.of(new Value())).when(repository).load(any());
-
-            Value ov = entity.load().modify();
-            RuntimeException t = new RuntimeException("insert");
-
-            doReturn(false).when(repository).update(any());
-            doThrow(t).when(repository).insert(any());
-
-            assertThatThrownBy(() -> entity.persist()).isSameAs(t);
-
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isTrue();
-            assertThat(entity.isDirty()).isTrue();
-        }
-
-        @Test
-        void delete_DoesNothing_WhenNotPersistedAndNotDirty()
-        {
-            ImmutableValue ov = entity.get();
-
-            assertThat(entity.delete()).isSameAs(entity);
-
-            verifyNoInteractions(repository);
-
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-        }
-
-        @Test
-        void delete_Deletes_WhenDirty()
-        {
-            Value ov = entity.modify();
-
-            assertThat(entity.delete()).isSameAs(entity);
-
-            verify(repository).delete(value.capture());
-
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isTrue();
-            assertThat(value.getValue()).isSameAs(ov);
-        }
-
-        @Test
-        void delete_Deletes_WhenLoaded()
-        {
-            entity.modify();
-
-            doReturn(Optional.of(new Value())).when(repository).load(any());
-
-            ImmutableValue ov = entity.load().get();
-
-            assertThat(entity.delete()).isSameAs(entity);
-
-            verify(repository).delete(value.capture());
-
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isFalse();
-            assertThat(entity.isDirty()).isFalse();
-            assertThat(value.getValue()).isSameAs(ov);
-        }
-
-        @Test
-        void delete_PropagatesException_WhenRepositoryDeleteFails()
-        {
-            entity.modify();
-
-            doReturn(Optional.of(new Value())).when(repository).load(any());
-
-            RuntimeException t = new RuntimeException("delete");
-            ImmutableValue ov = entity.load().get();
-
-            doThrow(t).when(repository).delete(any());
-
-            assertThatThrownBy(() -> entity.delete()).isSameAs(t);
-
-            assertThat(entity.isPresent()).isTrue();
-            assertThat(entity.get()).isSameAs(ov);
-            assertThat(entity.isPersisted()).isTrue();
-            assertThat(entity.isDirty()).isFalse();
-        }
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isTrue();
+        assertThat(entity.isDirty()).isTrue();
     }
 
-    private TestEntity empty()
+    @Test
+    void persist_PropagatesException_WhenFirstUpdateFails()
     {
-        return new TestEntity(null);
+        entity.modify();
+
+        doReturn(Optional.of(new Value())).when(repository).load(any());
+
+        Value ov = entity.load().modify();
+        RuntimeException t = new RuntimeException("update");
+
+        doThrow(t).when(repository).update(any());
+
+        assertThatThrownBy(() -> entity.persist()).isSameAs(t);
+
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isTrue();
+        assertThat(entity.isDirty()).isTrue();
     }
 
-    private TestEntity instance()
+    @Test
+    void persist_PropagatesException_WhenSecondInsertFails() throws Exception
     {
-        return new TestEntity(new Value());
+        entity.modify();
+
+        doReturn(Optional.of(new Value())).when(repository).load(any());
+
+        Value ov = entity.load().modify();
+        RuntimeException t = new RuntimeException("insert");
+
+        doReturn(false).when(repository).update(any());
+        doThrow(t).when(repository).insert(any());
+
+        assertThatThrownBy(() -> entity.persist()).isSameAs(t);
+
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isTrue();
+        assertThat(entity.isDirty()).isTrue();
+    }
+
+    @Test
+    void delete_DoesNothing_WhenNotPersistedAndNotDirty()
+    {
+        ImmutableValue ov = entity.get();
+
+        assertThat(entity.delete()).isSameAs(entity);
+
+        verifyNoInteractions(repository);
+
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isFalse();
+    }
+
+    @Test
+    void delete_Deletes_WhenDirty()
+    {
+        Value ov = entity.modify();
+
+        assertThat(entity.delete()).isSameAs(entity);
+
+        verify(repository).delete(value.capture());
+
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isTrue();
+        assertThat(value.getValue()).isSameAs(ov);
+    }
+
+    @Test
+    void delete_Deletes_WhenLoaded()
+    {
+        entity.modify();
+
+        doReturn(Optional.of(new Value())).when(repository).load(any());
+
+        ImmutableValue ov = entity.load().get();
+
+        assertThat(entity.delete()).isSameAs(entity);
+
+        verify(repository).delete(value.capture());
+
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isFalse();
+        assertThat(entity.isDirty()).isFalse();
+        assertThat(value.getValue()).isSameAs(ov);
+    }
+
+    @Test
+    void delete_PropagatesException_WhenRepositoryDeleteFails()
+    {
+        entity.modify();
+
+        doReturn(Optional.of(new Value())).when(repository).load(any());
+
+        RuntimeException t = new RuntimeException("delete");
+        ImmutableValue ov = entity.load().get();
+
+        doThrow(t).when(repository).delete(any());
+
+        assertThatThrownBy(() -> entity.delete()).isSameAs(t);
+
+        assertThat(entity.get()).isSameAs(ov);
+        assertThat(entity.isPersisted()).isTrue();
+        assertThat(entity.isDirty()).isFalse();
     }
 
     private interface ImmutableValue {
@@ -531,9 +403,9 @@ class EntityTest {
     }
 
     private class TestEntity extends Entity<ImmutableValue, Value, TestEntity> {
-        public TestEntity(Value value)
+        public TestEntity()
         {
-            super(repository, value);
+            super(repository, new Value());
         }
     }
 }

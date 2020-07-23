@@ -20,17 +20,6 @@ class EmployeeEntityFactoryTest {
     private EmployeeEntityFactory factory;
 
     @Test
-    void empty_ReturnsDifferentEntity_Always()
-    {
-        EmployeeEntity ee1 = factory.empty();
-        EmployeeEntity ee2 = factory.empty();
-
-        assertThat(ee1).isNotNull();
-        assertThat(ee2).isNotNull();
-        assertThat(ee2).isNotSameAs(ee1);
-    }
-
-    @Test
     void instance_ReturnsDifferentEntity_Always()
     {
         EmployeeEntity ee1 = factory.instance();
@@ -42,18 +31,7 @@ class EmployeeEntityFactoryTest {
     }
 
     @Nested
-    class Empty {
-        private EmployeeEntity entity;
-
-        @BeforeEach
-        void setUp()
-        {
-            entity = factory.empty();
-        }
-    }
-
-    @Nested
-    class Present {
+    class Entity {
         private EmployeeEntity entity;
 
         @BeforeEach
@@ -65,18 +43,17 @@ class EmployeeEntityFactoryTest {
         @Test
         void getManager_ReturnsEmpty_WhenManagerIdIsNotSet()
         {
-            assertThat(entity.getManager().isPresent()).isFalse();
+            assertThat(entity.getManager()).isEmpty();
         }
 
         @Test
-        void getManager_ReturnsPresentNonPersistedDirty_WhenManagerIdIsSet()
+        void getManager_ReturnsNonPersistedDirty_WhenManagerIdIsSet()
         {
             entity.managerID("1222");
 
-            EmployeeEntity mgr = entity.getManager();
+            EmployeeEntity mgr = entity.getManager().get();
 
             assertThat(mgr).isNotSameAs(entity);
-            assertThat(mgr.isPresent()).isTrue();
             assertThat(mgr.isPersisted()).isFalse();
             assertThat(mgr.isDirty()).isTrue();
             assertThat(mgr.get().getEmployeeID()).isEqualTo("1222");
