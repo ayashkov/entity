@@ -1,4 +1,5 @@
 package org.yashkov.entity;
 
-public interface SearchCriteria<R> {
+public interface SearchCriteria {
+    OpSelection with(String attr);
 }

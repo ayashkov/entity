@@ -1,8 +1,10 @@
 package org.yashkov.entity.employee;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.yashkov.entity.Entity;
+import org.yashkov.entity.SearchCriteriaImpl;
 
 public class EmployeeEntityFactory {
     private final EmployeeRepository repository;
@@ -22,6 +24,12 @@ public class EmployeeEntityFactory {
         private EmployeeEntity()
         {
             super(repository, new Employee());
+        }
+
+        private EmployeeEntity(Employee employee)
+        {
+            super(repository, employee);
+            modify();
         }
 
         public EmployeeEntity employeeID(String id)
@@ -44,6 +52,18 @@ public class EmployeeEntityFactory {
 
             return id == null ? Optional.empty() :
                 Optional.of(instance().employeeID(id));
+        }
+
+        public Stream<EmployeeEntity> getDirectReports()
+        {
+            String id = get().getEmployeeID();
+
+            if (id == null)
+                return Stream.empty();
+
+            return repository.search(
+                new SearchCriteriaImpl().with("managerID").equalsTo(id))
+                .map(EmployeeEntity::new);
         }
     }
 }
